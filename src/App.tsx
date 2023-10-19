@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import "./App.css";
 
 const appVersion = __APP_VERSION__;
@@ -7,36 +7,47 @@ const versionCheckInterval = __VERSION_CHECK_INTERVAL__;
 function App() {
   /** The remote version fetched from JSON */
   const [newVersion, setNewVersion] = useState("");
-  const [showNewVersion, setShowNewVersion] = useState(false);
   const [lastChecked, setLastChecked] = useState<Date | null>(null);
 
-  /** Check version by comparing the built-in app version with signature.json. Add timestamp for cache busting. */
-  useEffect(() => {
-    const compareSignature = fetch(`/signature.json?${Date.now()}`)
-      .then((res) => {
-        return res.json();
+  /** Fetch remote version from signature.json. Add timestamp for cache busting. */
+  const fetchRemoteVersion = useCallback(
+    () =>
+      fetch(`/signature.json?${Date.now()}`, {
+        cache: "no-store",
       })
-      .then((data: { version: string }) => {
-        setNewVersion(data.version);
-        setLastChecked(new Date());
-        return data.version;
-      });
-    /** init run and update without prompt */
-    compareSignature.then((version) => {
+        .then((res) => {
+          return res.json();
+        })
+        .then((data: { version: string }) => {
+          setNewVersion(data.version);
+          setLastChecked(new Date());
+          return data.version;
+        }),
+    []
+  );
+
+  const [showNewVersion, setShowNewVersion] = useState(false);
+
+  useEffect(() => {
+    /** initial run and update without prompt */
+    fetchRemoteVersion().then((version) => {
       if (version !== appVersion) {
         hardReloadPage();
       }
     });
+
     /** interval run and show prompt if update is needed */
     const timer = setInterval(() => {
-      compareSignature.then((version) => {
+      fetchRemoteVersion().then((version) => {
         if (version !== appVersion) {
           setShowNewVersion(true);
+        } else {
+          console.log("version not changed");
         }
       });
     }, versionCheckInterval);
     return () => clearInterval(timer);
-  }, []);
+  }, [fetchRemoteVersion]);
 
   /** Use your favorite way to perform a hard reload on the current page. */
   function hardReloadPage() {
@@ -45,9 +56,9 @@ function App() {
 
   return (
     <>
-      <p>Your version: {appVersion}</p>
+      <p>Local version: {appVersion}</p>
       <p>Remote version: {newVersion}</p>
-      <p>Check interval: {versionCheckInterval}</p>
+      <p>Check interval: {versionCheckInterval / 1000} seconds</p>
       <p>Last checked: {lastChecked?.toLocaleString()}</p>
       {showNewVersion && (
         <div>
