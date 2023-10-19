@@ -1,27 +1,19 @@
-# React + TypeScript + Vite
+# Version Checking and Auto Update for React Web App
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+## The Problem
 
-Currently, two official plugins are available:
+When developing client side web app, it's often important to ensure that the app is updated with the latest version. This is especially true when user leaves the app page opened for a long time. In this case, the user may not be aware that the app is not updated and is running an outdated version.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+In this post, I will demoonstrate a simple way to check for updates and reload the app if there is a new version.
 
-## Expanding the ESLint configuration
+## The Solution
 
-If you are developing a production application, we recommend updating the configuration to enable type aware lint rules:
+1. Generate a version number for the app and embed it in the code on every build.
 
-- Configure the top-level `parserOptions` property like this:
+2. Write the same version number to a file on the server and make sure it is accessible to the client.
 
-```js
-   parserOptions: {
-    ecmaVersion: 'latest',
-    sourceType: 'module',
-    project: ['./tsconfig.json', './tsconfig.node.json'],
-    tsconfigRootDir: __dirname,
-   },
-```
+3. Have the app periodically fetch for the version number file, and compare it with the embedded value. If the values don't match, reload the app either automatically or with a prompt.
 
-- Replace `plugin:@typescript-eslint/recommended` to `plugin:@typescript-eslint/recommended-type-checked` or `plugin:@typescript-eslint/strict-type-checked`
-- Optionally add `plugin:@typescript-eslint/stylistic-type-checked`
-- Install [eslint-plugin-react](https://github.com/jsx-eslint/eslint-plugin-react) and add `plugin:react/recommended` & `plugin:react/jsx-runtime` to the `extends` list
+## Code Explaination
+
+See my blog post: https://calvincchan.com/blog/react-version-check-and-auto-update
